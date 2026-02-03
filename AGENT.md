@@ -91,9 +91,6 @@ Suggest **legal** external data (cutoff before Sep 2025):
 
 - **Algorithm:**
   - **Must use Ensemble Stacking**
-  - L0: CatBoost, LightGBM, XGBoost, TabNet
-  - L1: Logistic / Ridge
-
 - **Loss Function:**
   - **Must use** Focal Loss or custom `class_weights` for imbalanced data.
 
