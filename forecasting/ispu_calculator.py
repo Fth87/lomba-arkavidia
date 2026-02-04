@@ -1,28 +1,68 @@
 
 """
-ISPU Calculator - Permen LHK No. 14 Tahun 2020 (Tuned)
+ISPU Calculator - Permen LHK No. 14 Tahun 2020 (Official)
 
-This module implements the ISPU calculation logic.
-NOTE: The breakpoints for PM2.5 have been tuned to match the 'Ground Truth' classification
-observed in the dataset (which seems to follow older regulations or loose 1:1 mapping),
-ensuring a realistic distribution of 'BAIK' and 'SEDANG' categories.
+This module implements the ISPU calculation logic according to official government regulations.
+Breakpoints updated from official source: https://ditppu.menlhk.go.id/portal/
+
+PM2.5 Official Breakpoints (µg/m³):
+- BAIK (0-50): 0-15.5
+- SEDANG (51-100): 15.6-55.4
+- TIDAK SEHAT (101-200): 55.5-150.4
+- SANGAT TIDAK SEHAT (201-300): 150.5-250.4
+- BERBAHAYA (>300): >250.4
 """
 import numpy as np
 import pandas as pd
 from typing import Union, Dict, Tuple
 
 
+# OLD TUNED BREAKPOINTS (Commented out - these were tuned to match dataset patterns)
+# BREAKPOINTS_OLD = {
+#     'pm10': {
+#         'concentrations': [0, 50, 150, 350, 420, 500],
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'pm25': {
+#         'concentrations': [0, 65, 90, 200, 300, 500], # Tuned: 0-65 BAIK, 65-90 SEDANG
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'so2': {
+#         'concentrations': [0, 80, 365, 800, 1600, 2100], # Older standard
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'co': {
+#         'concentrations': [0, 4000, 8000, 15000, 30000, 45000],
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'o3': {
+#         'concentrations': [0, 120, 235, 400, 800, 1000],
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'no2': {
+#         'concentrations': [0, 80, 200, 1130, 2260, 3750], # Older standard
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     },
+#     'hc': {
+#         'concentrations': [0, 45, 100, 215, 432, 600],
+#         'ispu': [0, 50, 100, 200, 300, 500]
+#     }
+# }
+
+# OFFICIAL BREAKPOINTS - Permen LHK No. 14 Tahun 2020
+# Source: https://ditppu.menlhk.go.id/portal/read/indeks-standar-pencemar-udara-ispu-sebagai-informasi-mutu-udara-ambien-di-indonesia
 BREAKPOINTS = {
     'pm10': {
         'concentrations': [0, 50, 150, 350, 420, 500],
         'ispu': [0, 50, 100, 200, 300, 500]
     },
     'pm25': {
-        'concentrations': [0, 65, 90, 200, 300, 500], # Tuned: 0-65 BAIK, 65-90 SEDANG
+        # Official PM2.5 breakpoints verified from government website
+        'concentrations': [0, 15.5, 55.4, 150.4, 250.4, 500],
         'ispu': [0, 50, 100, 200, 300, 500]
     },
     'so2': {
-        'concentrations': [0, 80, 365, 800, 1600, 2100], # Older standard
+        'concentrations': [0, 52, 180, 400, 800, 1200],
         'ispu': [0, 50, 100, 200, 300, 500]
     },
     'co': {
@@ -34,7 +74,7 @@ BREAKPOINTS = {
         'ispu': [0, 50, 100, 200, 300, 500]
     },
     'no2': {
-        'concentrations': [0, 80, 200, 1130, 2260, 3750], # Older standard
+        'concentrations': [0, 80, 200, 1130, 2260, 3000],
         'ispu': [0, 50, 100, 200, 300, 500]
     },
     'hc': {
